@@ -389,21 +389,7 @@
         container.appendChild(btn);
       });
       
-      // Bottom static action items
-      const bottomDiv = document.createElement('div');
-      bottomDiv.className = "mt-auto px-1.5 space-y-1.5 pt-4 pb-2";
-      bottomDiv.innerHTML = `
-        <button onclick="openRecordModal()" class="w-full py-2 bg-surface-card border border-surface-border/50 hover:bg-surface-card text-[9px] font-bold text-gray-400 rounded transition flex items-center justify-center gap-0.5">
-          <span>📝</span><span>領取紀錄</span>
-        </button>
-        <a href="admin.html" target="_blank" class="w-full py-2 bg-gold/15 border border-gold/30 hover:bg-gold/20 text-[9px] font-bold text-gold rounded transition flex items-center justify-center gap-0.5">
-          <span>💻</span><span>優惠後台</span>
-        </a>
-        <button onclick="resetMockState()" class="w-full py-1.5 bg-surface-raised border border-surface-border text-gray-600 hover:text-gray-400 text-[8px] rounded transition">
-          🔄 重設狀態
-        </button>
-      `;
-      container.appendChild(bottomDiv);
+      // (Removed bottom static action items)
     }
 
     // Initialize States
