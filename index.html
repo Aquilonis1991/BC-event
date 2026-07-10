@@ -1,0 +1,956 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BC 娛樂城 - 優惠活動大廳</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            gold: { DEFAULT: '#d4a853', light: '#f5e6b8', dark: '#a67c2e' },
+            surface: { DEFAULT: '#0d1117', card: '#161b22', raised: '#1c2333', border: '#2d3548' }
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=Noto+Sans+TC:wght@400;500;700&display=swap');
+    body {
+      font-family: 'Outfit', 'Noto Sans TC', system-ui, -apple-system, sans-serif;
+      background-color: #080b10;
+    }
+    /* Hide scrollbar for Chrome, Safari and Opera */
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    /* Hide scrollbar for IE, Edge and Firefox */
+    .no-scrollbar {
+      -ms-overflow-style: none;  /* IE and Edge */
+      scrollbar-width: none;  /* Firefox */
+    }
+    /* Glassmorphism utility */
+    .glass-panel {
+      background: linear-gradient(135deg, rgba(22, 27, 34, 0.8) 0%, rgba(13, 17, 23, 0.9) 100%);
+      border: 1px solid rgba(212, 168, 83, 0.15);
+    }
+    .neon-border-gold {
+      box-shadow: 0 0 10px rgba(212, 168, 83, 0.2), inset 0 0 10px rgba(212, 168, 83, 0.05);
+    }
+    .neon-glow-red {
+      box-shadow: 0 0 8px rgba(239, 68, 68, 0.4);
+    }
+    .neon-glow-gold {
+      box-shadow: 0 0 8px rgba(212, 168, 83, 0.5);
+    }
+    /* Gold gradient text */
+    .text-gold-gradient {
+      background: linear-gradient(135deg, #ffeaa7 0%, #d4a853 50%, #a67c2e 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    /* Particle canvas overlay pointer event bypass */
+    #particle-canvas {
+      pointer-events: none;
+      z-index: 100;
+    }
+  </style>
+</head>
+<body class="text-gray-200 overflow-hidden bg-[#0c0f16]">
+
+  <!-- Confetti and Gold Coins Canvas Overlay -->
+  <canvas id="particle-canvas" class="absolute top-0 left-0 w-full h-full"></canvas>
+
+  <!-- Main Full-Screen Page Container -->
+  <div class="relative w-full h-screen bg-[#0c0f16] flex flex-col overflow-hidden">
+
+    <!-- App Header -->
+    <header class="px-4 py-3 flex items-center justify-between border-b border-surface-border/50 bg-[#090c12]/95 backdrop-blur z-40 relative">
+      <div class="flex items-center gap-3">
+        <button onclick="window.history.back()" class="text-gray-400 hover:text-white transition">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/></svg>
+        </button>
+        <!-- Horizontal Top Tab Navigator (Scrollable) -->
+        <div class="flex gap-4 text-sm overflow-x-auto no-scrollbar font-bold pt-2.5 pb-1">
+          <a href="#" class="text-gold border-b-2 border-gold pb-1 whitespace-nowrap">
+            活動
+          </a>
+          <a href="#" class="text-gray-500 hover:text-gray-300 pb-1 whitespace-nowrap">
+            任務
+          </a>
+          <a href="#" class="text-gray-500 hover:text-gray-300 pb-1 whitespace-nowrap">信用借款</a>
+          <a href="#" class="text-gray-500 hover:text-gray-300 pb-1 whitespace-nowrap">幸運轉盤</a>
+          <a href="#" class="text-gray-500 hover:text-gray-300 pb-1 whitespace-nowrap">VIP</a>
+        </div>
+      </div>
+
+      <!-- Top Right Admin Access Link -->
+      <a href="admin.html" target="_blank" class="text-[10px] font-bold text-gold border border-gold/40 hover:bg-gold/10 px-2.5 py-1 rounded-full transition flex items-center gap-1">
+        <span>💻</span><span>後台</span>
+      </a>
+    </header>
+
+    <!-- App Main Scrollable Container -->
+    <div class="flex-1 flex flex-col overflow-hidden relative">
+      
+      <!-- Search and Lazy Matcher Header Section -->
+      <div class="p-3 bg-gradient-to-b from-[#090c12] to-[#0c1018] border-b border-surface-border/30 space-y-2.5">
+        <!-- Search bar -->
+        <div class="relative">
+          <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-500 text-xs">🔍</span>
+          <input type="text" id="eventSearch" oninput="filterEvents()" placeholder="搜尋活動名稱，如「首存」、「返水」..." 
+            class="w-full bg-surface-card border border-surface-border/60 text-xs rounded-full pl-9 pr-4 py-2 text-white placeholder-gray-500 focus:outline-none focus:border-gold/50 transition">
+        </div>
+
+        <!-- ⚡ 懶人智能推薦器 (Lazy Matcher Widget) -->
+        <div class="glass-panel rounded-xl p-3 border border-gold/20 neon-border-gold">
+          <div class="flex justify-between items-center mb-2">
+            <div class="flex items-center gap-1.5">
+              <span class="text-xs">⚡</span>
+              <h4 class="text-xs font-bold text-gold-light">懶人活動推薦：一秒找到你的優惠</h4>
+            </div>
+            <span class="text-[9px] text-gray-500">Lazy Matcher</span>
+          </div>
+          <!-- Option Buttons (Instant Filter) - Compact & scaled to prevent overflow -->
+          <div class="grid grid-cols-3 gap-2 w-full">
+            <button onclick="lazyMatch('easy')" class="w-full min-w-0 bg-surface-raised border border-surface-border hover:border-gold hover:text-gold py-1.5 px-0.5 rounded-lg transition text-center flex flex-col items-center justify-center">
+              <span class="text-[10px] sm:text-xs font-bold text-gray-200 whitespace-nowrap">🚀 立即拿錢</span>
+              <span class="text-[8px] text-gray-500 mt-0.5 scale-90 sm:scale-100 whitespace-nowrap">免流水/超好拿</span>
+            </button>
+            <button onclick="lazyMatch('high')" class="w-full min-w-0 bg-surface-raised border border-surface-border hover:border-gold hover:text-gold py-1.5 px-0.5 rounded-lg transition text-center flex flex-col items-center justify-center">
+              <span class="text-[10px] sm:text-xs font-bold text-gray-200 whitespace-nowrap">💎 挑戰大獎</span>
+              <span class="text-[8px] text-gray-500 mt-0.5 scale-90 sm:scale-100 whitespace-nowrap">超高彩金存送</span>
+            </button>
+            <button onclick="lazyMatch('rebate')" class="w-full min-w-0 bg-surface-raised border border-surface-border hover:border-gold hover:text-gold py-1.5 px-0.5 rounded-lg transition text-center flex flex-col items-center justify-center">
+              <span class="text-[10px] sm:text-xs font-bold text-gray-200 whitespace-nowrap">🛡️ 怕輸求保險</span>
+              <span class="text-[8px] text-gray-500 mt-0.5 scale-90 sm:scale-100 whitespace-nowrap">包賠退還/返水</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Double Columns Filter Layout -->
+      <div class="flex-1 flex overflow-hidden">
+        
+        <!-- Left Side Column: Vertical Categories (綜合, 棋牌, 電子...) - Dynamic -->
+        <div id="leftCategoryContainer" class="w-[85px] bg-[#090b10] border-r border-surface-border/30 flex flex-col py-2 overflow-y-auto no-scrollbar gap-1.5">
+          <!-- Populated dynamically by javascript -->
+        </div>
+
+        <!-- Right Side Column: Scrollable Cards List -->
+        <div class="flex-1 flex flex-col bg-[#0b0e14] overflow-hidden">
+          
+
+          <!-- Cards Content Scroll Container - Responsive Grid Layout -->
+          <div id="eventsListContainer" class="flex-grow overflow-y-auto p-3 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 auto-rows-max no-scrollbar pb-20">
+            <!-- Dynamically Loaded Cards will appear here -->
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- Phone Bottom Menu Bar -->
+    <nav class="fixed bottom-0 left-0 right-0 w-full bg-[#090c12]/95 border-t border-surface-border/50 flex justify-around py-2 text-[10px] font-bold text-gray-500 z-50">
+      <a href="#" class="flex flex-col items-center gap-0.5 hover:text-gray-300">
+        <span class="text-lg">🎮</span>
+        <span>首頁</span>
+      </a>
+      <a href="#" class="flex flex-col items-center gap-0.5 text-gold relative">
+        <span class="text-lg">🎁</span>
+        <span>優惠</span>
+      </a>
+      <a href="#" class="flex flex-col items-center gap-0.5 hover:text-gray-300">
+        <span class="text-lg">💰</span>
+        <span>充值</span>
+      </a>
+      <a href="#" class="flex flex-col items-center gap-0.5 hover:text-gray-300 font-mono">
+        <span class="text-lg font-bold">$</span>
+        <span>提現</span>
+      </a>
+      <a href="#" class="flex flex-col items-center gap-0.5 hover:text-gray-300">
+        <span class="text-lg">👤</span>
+        <span>我的</span>
+      </a>
+    </nav>
+
+  </div>
+
+
+
+  <!-- Record List Modal Sheet -->
+  <div id="recordModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm flex justify-center items-end md:items-center z-50 hidden">
+    <div class="w-full max-w-[430px] bg-[#0c1017] border-t border-surface-border md:border-2 md:border-surface-border rounded-t-3xl md:rounded-2xl p-5 space-y-4 max-h-[80vh] flex flex-col">
+      <div class="flex justify-between items-center pb-2 border-b border-surface-border/40">
+        <h3 class="text-sm font-bold text-white">📝 優惠彩金領取歷史紀錄</h3>
+        <button onclick="closeRecordModal()" class="text-gray-500 hover:text-white text-lg">✕</button>
+      </div>
+      <div class="flex-1 overflow-y-auto no-scrollbar space-y-2.5" id="recordListContent">
+        <!-- Records will load here -->
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Mock Events Data
+    const mockEvents = [
+      {
+        id: 'PROMO001',
+        title: '每日登入簽到送彩金',
+        reward: '送 ¥88',
+        summary: '懶人專屬！每日只需登入點擊，即可領取 ¥88 彩金。',
+        desc: '本活動面向全體BC會員，每日均可簽到領取。彩金僅需完成 1 倍流水即可提現！',
+        category: 'slots',
+        tags: ['easy', 'featured'],
+        badge: '零流水',
+        badgeClass: 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30',
+        steps: ['點擊簽到', '發放彩金', '極速到帳'],
+        wagerText: '1x 流水即可提現',
+        weight: 10,
+        actionType: 'claim_instant' // Directly claimable
+      },
+      {
+        id: 'PROMO002',
+        title: '新人首存驚喜特大禮包',
+        reward: '送 ¥1,888',
+        summary: '新手首充加贈 100%！最高可領 ¥1,888 巨額彩金。',
+        desc: '新會員首次存款 ¥100 以上，即享 100% 存款禮包。大額存送，適合想挑戰特大獎項的玩家。',
+        category: 'slots',
+        tags: ['high', 'featured'],
+        badge: '超高性價',
+        badgeClass: 'bg-red-500/10 text-red-400 border border-red-500/30',
+        steps: ['充值 ¥1,000', '自動配對', '送 ¥1,888'],
+        wagerText: '8x 電子遊戲流水',
+        weight: 9,
+        actionType: 'go_deposit' // Need to deposit
+      },
+      {
+        id: 'PROMO003',
+        title: '電子打水首存全包賠保險',
+        reward: '包賠 100%',
+        summary: '不怕輸！首筆電子遊戲產生虧損，平台 100% 包賠退還。',
+        desc: '凡參與電子遊戲首充的玩家，如當日虧損，將於次日清算時 100% 賠付返還至帳戶餘額，無後顧之憂！',
+        category: 'slots',
+        tags: ['rebate', 'featured'],
+        badge: '賠付保障',
+        badgeClass: 'bg-blue-500/10 text-blue-400 border border-blue-500/30',
+        steps: ['玩電子遊戲', '產生虧損', '100% 退還'],
+        wagerText: '免流水，直接提現',
+        weight: 8,
+        actionType: 'register' // Click to participate
+      },
+      {
+        id: 'PROMO004',
+        title: '數字人民幣限時充值加贈',
+        reward: '加贈 5.0%',
+        summary: '限時福利！使用數字人民幣充值，單筆額外加碼 5% 無上限。',
+        desc: '為推廣央行數字人民幣，使用數字人幣充值通道存款，每筆加贈 5% 彩金。剩餘時間不多，欲拿從速！',
+        category: 'slots',
+        tags: ['easy', 'ending'],
+        badge: '限時 2 小時',
+        badgeClass: 'bg-amber-500/10 text-amber-400 border border-amber-500/30',
+        steps: ['數幣充值', '額外加贈 5%', '即時入帳'],
+        wagerText: '0 流水限制',
+        weight: 7,
+        actionType: 'go_deposit'
+      },
+      {
+        id: 'PROMO005',
+        title: '棋牌對戰大賽瓜分百萬',
+        reward: '瓜分 ¥100萬',
+        summary: '挑戰大獎！累積勝場即可與眾多玩家共同瓜分百萬獎金。',
+        desc: '在棋牌遊戲（如德州、鬥地主）中，每獲得一次勝利累積 1 個勝分，累積前 100 名的玩家可按比例瓜分百萬紅包！',
+        category: 'board',
+        tags: ['high'],
+        badge: '百萬獎池',
+        badgeClass: 'bg-gold/15 text-gold border border-gold/30',
+        steps: ['參與棋牌對局', '累積勝場', '分百萬獎金'],
+        wagerText: '3x 棋牌流水',
+        weight: 6,
+        actionType: 'register'
+      },
+      {
+        id: 'PROMO006',
+        title: '百家真人返水天天送',
+        reward: '返水 1.2%',
+        summary: '不計輸贏！每日投注真人視訊百家樂，無上限返還 1.2%。',
+        desc: '凡投注真人視訊大廳的會員，每日不計輸贏，隔日中午 12:00 自動返還 1.2% 流水金，隨投隨送！',
+        category: 'live',
+        tags: ['rebate', 'easy'],
+        badge: '天天返水',
+        badgeClass: 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30',
+        steps: ['真人百家', '累積投注', '返水 1.2%'],
+        wagerText: '系統自動發放',
+        weight: 5,
+        actionType: 'claimed_auto' // Already participating / auto
+      },
+      {
+        id: 'PROMO007',
+        title: '捕魚達人爆金翻倍大獎',
+        reward: '翻倍 ¥8,888',
+        summary: '捕獲黃金龍王，掉落倍數加成，最高直接翻倍獎金。',
+        desc: '於捕魚大廳捕獲指定金龍王或 Boss，可觸發爆金事件，所得分值直接翻倍，上限 ¥8,888。',
+        category: 'fish',
+        tags: ['high'],
+        badge: '爆金倍數',
+        badgeClass: 'bg-purple-500/10 text-purple-400 border border-purple-500/30',
+        steps: ['進入捕魚遊戲', '捕獲黃金龍', '最高翻倍 8K'],
+        wagerText: '無流水限制',
+        weight: 4,
+        actionType: 'register'
+      },
+      {
+        id: 'PROMO008',
+        title: '體育滾球連贏特大紅包',
+        reward: '連贏送 ¥6,666',
+        summary: '體育賽事滾球盤連贏 5 場以上，送驚喜開運紅包！',
+        desc: '投注體育滾球，如連續中獎 5 單以上，單筆滿額 ¥100 即可申請對應連贏大紅包。',
+        category: 'sports',
+        tags: ['high'],
+        badge: '連贏熱潮',
+        badgeClass: 'bg-red-500/10 text-red-400 border border-red-500/30',
+        steps: ['體育滾球盤', '連贏 5 單', '送 ¥6,666'],
+        wagerText: '5x 體育流水',
+        weight: 3,
+        actionType: 'register'
+      }
+    ];
+
+    // State Variables
+    let currentCategory = 'all';
+    let currentTag = 'all';
+    let userPromoStates = {}; // Saves locally
+    let activeEvents = []; // Loaded from localStorage or mockEvents fallback
+
+    const defaultCategories = {
+      slots: '電子',
+      board: '棋牌',
+      fish: '捕魚',
+      live: '真人',
+      sports: '體育',
+      lottery: '彩票'
+    };
+
+    let categoryNames = {};
+
+    function initCategories() {
+      const storedCats = localStorage.getItem('bc_categories');
+      if (storedCats) {
+        categoryNames = JSON.parse(storedCats);
+      } else {
+        categoryNames = { ...defaultCategories };
+        localStorage.setItem('bc_categories', JSON.stringify(categoryNames));
+      }
+      
+      renderCategoryTabs();
+    }
+
+    function renderCategoryTabs() {
+      const container = document.getElementById('leftCategoryContainer');
+      container.innerHTML = '';
+      
+      // Always add "綜合" first
+      const allBtn = document.createElement('button');
+      allBtn.onclick = () => selectCategory('all');
+      allBtn.id = 'tab-cat-all';
+      allBtn.className = "py-2.5 text-center flex flex-col items-center gap-1 border-l-4 border-gold text-gold bg-surface-card/40 transition";
+      allBtn.innerHTML = `
+        <span class="text-lg">🎪</span>
+        <span class="text-xs font-bold">綜合</span>
+      `;
+      container.appendChild(allBtn);
+      
+      // Icons mapping for categories
+      const catIcons = {
+        slots: '🎰',
+        board: '🃏',
+        fish: '🐟',
+        live: '🎲',
+        sports: '⚽',
+        lottery: '🔮'
+      };
+      
+      Object.keys(categoryNames).forEach(key => {
+        const btn = document.createElement('button');
+        btn.onclick = () => selectCategory(key);
+        btn.id = `tab-cat-${key}`;
+        btn.className = "py-2.5 text-center flex flex-col items-center gap-1 border-l-4 border-transparent text-gray-500 hover:text-gray-300 transition";
+        const icon = catIcons[key] || '🎮';
+        btn.innerHTML = `
+          <span class="text-lg">${icon}</span>
+          <span class="text-xs font-bold">${categoryNames[key]}</span>
+        `;
+        container.appendChild(btn);
+      });
+      
+      // Bottom static action items
+      const bottomDiv = document.createElement('div');
+      bottomDiv.className = "mt-auto px-1.5 space-y-1.5 pt-4 pb-2";
+      bottomDiv.innerHTML = `
+        <button onclick="openRecordModal()" class="w-full py-2 bg-surface-card border border-surface-border/50 hover:bg-surface-card text-[9px] font-bold text-gray-400 rounded transition flex items-center justify-center gap-0.5">
+          <span>📝</span><span>領取紀錄</span>
+        </button>
+        <a href="admin.html" target="_blank" class="w-full py-2 bg-gold/15 border border-gold/30 hover:bg-gold/20 text-[9px] font-bold text-gold rounded transition flex items-center justify-center gap-0.5">
+          <span>💻</span><span>優惠後台</span>
+        </a>
+        <button onclick="resetMockState()" class="w-full py-1.5 bg-surface-raised border border-surface-border text-gray-600 hover:text-gray-400 text-[8px] rounded transition">
+          🔄 重設狀態
+        </button>
+      `;
+      container.appendChild(bottomDiv);
+    }
+
+    // Initialize States
+    function init() {
+      // Initialize dynamic game categories from localStorage
+      initCategories();
+
+      // 1. Load active events config from localStorage or default mockEvents
+      const storedConfig = localStorage.getItem('bc_events_config');
+      if (storedConfig) {
+        activeEvents = JSON.parse(storedConfig);
+      } else {
+        activeEvents = JSON.parse(JSON.stringify(mockEvents));
+        localStorage.setItem('bc_events_config', JSON.stringify(activeEvents));
+      }
+
+      // 2. Load user participation states
+      const storedStates = localStorage.getItem('bc_promo_states');
+      if (storedStates) {
+        userPromoStates = JSON.parse(storedStates);
+      } else {
+        // Build initial states mapping
+        activeEvents.forEach(e => {
+          if (!userPromoStates[e.id]) {
+            userPromoStates[e.id] = {
+              status: 'initial',
+              timeClaimed: null
+            };
+          }
+        });
+        saveStates();
+      }
+
+      // Sync any new events that don't have states yet
+      let stateChanged = false;
+      activeEvents.forEach(e => {
+        if (!userPromoStates[e.id]) {
+          userPromoStates[e.id] = {
+            status: 'initial',
+            timeClaimed: null
+          };
+          stateChanged = true;
+        }
+      });
+      if (stateChanged) saveStates();
+
+      renderEvents();
+    }
+
+    function saveStates() {
+      localStorage.setItem('bc_promo_states', JSON.stringify(userPromoStates));
+    }
+
+    function resetMockState() {
+      localStorage.removeItem('bc_promo_states');
+      userPromoStates = {};
+      init();
+      showToast('🔄 已重置所有活動參與狀態');
+    }
+
+    // Selecting Category (Left Tabs)
+    function selectCategory(cat) {
+      currentCategory = cat;
+      const cats = ['all', ...Object.keys(categoryNames)];
+      cats.forEach(c => {
+        const btn = document.getElementById(`tab-cat-${c}`);
+        if (btn) {
+          if (c === cat) {
+            btn.className = "py-2.5 text-center flex flex-col items-center gap-1 border-l-4 border-gold text-gold bg-surface-card/40 transition";
+          } else {
+            btn.className = "py-2.5 text-center flex flex-col items-center gap-1 border-l-4 border-transparent text-gray-500 hover:text-gray-300 transition";
+          }
+        }
+      });
+      renderEvents();
+    }
+
+    // Selecting Tags (Top pills)
+    function selectTag(tag) {
+      currentTag = tag;
+      const tags = ['all', 'featured', 'easy', 'high', 'rebate', 'ending'];
+      tags.forEach(t => {
+        const pill = document.getElementById(`pill-tag-${t}`);
+        if (pill) {
+          if (t === tag) {
+            pill.className = "flex items-center justify-center px-3.5 py-1.5 rounded-full bg-gold text-black border border-gold text-[10px] sm:text-xs font-bold transition whitespace-nowrap";
+          } else {
+            pill.className = "flex items-center justify-center px-3.5 py-1.5 rounded-full bg-surface-card border border-surface-border text-gray-400 hover:text-white text-[10px] sm:text-xs font-bold transition whitespace-nowrap";
+          }
+        }
+      });
+      renderEvents();
+    }
+
+    // Reset all filter criteria to default
+    function resetFilters() {
+      document.getElementById('eventSearch').value = '';
+      currentCategory = 'all';
+      currentTag = 'all';
+      
+      // Reset sidebar active classes
+      const cats = ['all', ...Object.keys(categoryNames)];
+      cats.forEach(c => {
+        const btn = document.getElementById(`tab-cat-${c}`);
+        if (btn) {
+          if (c === 'all') {
+            btn.className = "py-2.5 text-center flex flex-col items-center gap-1 border-l-4 border-gold text-gold bg-surface-card/40 transition";
+          } else {
+            btn.className = "py-2.5 text-center flex flex-col items-center gap-1 border-l-4 border-transparent text-gray-500 hover:text-gray-300 transition";
+          }
+        }
+      });
+      
+      // Reset top pills active classes
+      const tags = ['all', 'featured', 'easy', 'high', 'rebate', 'ending'];
+      tags.forEach(t => {
+        const pill = document.getElementById(`pill-tag-${t}`);
+        if (pill) {
+          if (t === 'all') {
+            pill.className = "flex items-center justify-center px-3.5 py-1.5 rounded-full bg-gold text-black border border-gold text-[10px] sm:text-xs font-bold transition whitespace-nowrap";
+          } else {
+            pill.className = "flex items-center justify-center px-3.5 py-1.5 rounded-full bg-surface-card border border-surface-border text-gray-400 hover:text-white text-[10px] sm:text-xs font-bold transition whitespace-nowrap";
+          }
+        }
+      });
+      renderEvents();
+    }
+
+    // Search bar filter
+    function filterEvents() {
+      renderEvents();
+    }
+
+    // Lazy Matcher interactive filter
+    function lazyMatch(tag) {
+      // Find events matching this tag
+      selectTag(tag);
+      showToast(`⚡ 懶人智慧篩選：為您挑選「${tag === 'easy' ? '零流水極速拿' : tag === 'high' ? '超高彩金存送' : '包賠與高返水'}」活動`);
+      
+      // Auto scroll to first item
+      setTimeout(() => {
+        const container = document.getElementById('eventsListContainer');
+        container.scrollTo({ top: 0, behavior: 'smooth' });
+      }, 100);
+    }
+
+    // Render cards list based on current selection
+    function renderEvents() {
+      const container = document.getElementById('eventsListContainer');
+      container.innerHTML = '';
+
+      const query = document.getElementById('eventSearch').value.toLowerCase().trim();
+
+      const filtered = activeEvents.filter(e => {
+        // Visibility check
+        if (e.visible === false) return false;
+        
+        // Display Time Range check
+        const now = new Date();
+        if (e.startTime) {
+          const start = new Date(e.startTime);
+          if (now < start) return false;
+        }
+        if (e.endTime) {
+          const end = new Date(e.endTime);
+          if (now > end) return false;
+        }
+
+        // Category check
+        if (currentCategory !== 'all' && e.category !== currentCategory) return false;
+        // Tag check
+        if (currentTag !== 'all' && !e.tags.includes(currentTag)) return false;
+        // Search query check
+        if (query && !e.title.toLowerCase().includes(query) && !e.summary.toLowerCase().includes(query)) return false;
+        return true;
+      });
+
+      if (filtered.length === 0) {
+        container.innerHTML = `
+          <div class="text-center py-16 text-gray-600 space-y-3">
+            <span class="text-3xl block mb-2">🔍</span>
+            <p class="text-xs">找不到符合條件的活動</p>
+            <button onclick="resetFilters()" class="mt-2 text-[10px] font-bold text-gold border border-gold/40 hover:bg-gold/10 px-3 py-1.5 rounded-full transition">
+              清除所有篩選條件
+            </button>
+          </div>
+        `;
+        return;
+      }
+
+      // Sort by weight descending (higher weight first)
+      const sorted = [...filtered].sort((a, b) => (b.weight || 0) - (a.weight || 0));
+
+      sorted.forEach(e => {
+        const state = userPromoStates[e.id] || { status: 'initial' };
+        
+        // Card wrapper - Entire card is clickable to direct details page
+        const card = document.createElement('div');
+        card.id = `card-${e.id}`;
+        card.className = "relative glass-panel rounded-2xl p-4 flex flex-col justify-between hover:border-gold/40 cursor-pointer transition duration-300 group";
+        card.onclick = () => { window.location.href = `detail.html?id=${e.id}`; };
+        
+        // Dynamic Glow color according to state
+        let statusGlow = "rgba(212, 168, 83, 0.05)";
+        if (state.status === 'claimed') statusGlow = "rgba(16, 185, 129, 0.03)";
+        if (state.status === 'registered') statusGlow = "rgba(59, 130, 246, 0.03)";
+        card.style.boxShadow = `0 4px 20px ${statusGlow}`;
+
+        // Action Button setup
+        let btnText = '';
+        let btnClass = '';
+        let btnClick = `event.stopPropagation(); handleAction('${e.id}')`;
+
+        if (e.actionType === 'claimed_auto') {
+          btnText = '🟢 自動返水中';
+          btnClass = 'bg-[#10b981]/15 text-[#10b981] border border-[#10b981]/30 cursor-default pointer-events-none text-xs py-1.5 px-3 rounded-lg font-bold';
+        } else if (state.status === 'claimed') {
+          btnText = '✓ 已領取彩金';
+          btnClass = 'bg-surface-raised text-gray-600 border border-surface-border cursor-default pointer-events-none text-xs py-1.5 px-3 rounded-lg font-bold';
+        } else if (state.status === 'registered') {
+          if (e.actionType === 'go_deposit') {
+            btnText = '💰 去充值達標';
+            btnClass = 'bg-gradient-to-r from-amber-500 to-gold text-black hover:brightness-110 text-xs py-1.5 px-3 rounded-lg font-bold transition';
+            btnClick = `event.stopPropagation(); triggerSimulatedDeposit('${e.id}')`;
+          } else {
+            btnText = '🎮 去投注流水';
+            btnClass = 'bg-[#3b82f6]/20 text-[#3b82f6] border border-[#3b82f6]/40 hover:bg-[#3b82f6]/30 text-xs py-1.5 px-3 rounded-lg font-bold transition';
+            btnClick = `event.stopPropagation(); triggerSimulatedBetting('${e.id}')`;
+          }
+        } else {
+          // Initial status
+          if (e.actionType === 'claim_instant') {
+            btnText = '⚡ 一鍵領取';
+            btnClass = 'bg-gradient-to-r from-gold via-gold to-gold-dark text-black hover:brightness-110 text-xs py-1.5 px-3 rounded-lg font-bold transition neon-glow-gold';
+          } else if (e.actionType === 'go_deposit') {
+            btnText = '一鍵參賽';
+            btnClass = 'bg-surface-raised border border-surface-border text-gray-300 hover:border-gold hover:text-gold text-xs py-1.5 px-3 rounded-lg font-bold transition';
+          } else {
+            btnText = '一鍵報名';
+            btnClass = 'bg-surface-raised border border-gold/30 text-gold-light hover:bg-gold/10 text-xs py-1.5 px-3 rounded-lg font-bold transition';
+          }
+        }
+
+        // Timeline visualization inside card (Supports 1 to 4 steps, empty ones filtered out)
+        const stepsList = (e.steps || []).filter(Boolean);
+        let stepsSectionHTML = '';
+        if (stepsList.length > 0) {
+          const stepHTML = stepsList.map((s, idx) => `
+            <div class="flex items-center gap-1">
+              <span class="w-4 h-4 text-[9px] bg-gold/20 text-gold border border-gold/30 rounded-full flex items-center justify-center font-bold font-mono">${idx+1}</span>
+              <span class="text-[10px] sm:text-xs text-gray-400 font-medium">${s}</span>
+            </div>
+          `).join('<span class="text-gray-700 text-[9px]">➔</span>');
+
+          stepsSectionHTML = `
+            <!-- "Lazy wager Flow" Section - Scaled up for mobile reading -->
+            <div class="relative bg-surface-raised/40 p-2.5 rounded-lg flex items-center justify-start mb-3.5 border border-surface-border/20 overflow-x-auto no-scrollbar">
+              <div class="flex items-center gap-1 select-none whitespace-nowrap">
+                ${stepHTML}
+              </div>
+            </div>
+          `;
+        }
+
+        card.innerHTML = `
+          <!-- Glow background effect -->
+          <div class="absolute inset-0 bg-gradient-to-r from-gold/5 to-transparent rounded-2xl opacity-0 group-hover:opacity-100 transition duration-300"></div>
+          
+          <div class="relative flex justify-between items-start mb-2">
+            <!-- Glow Badges -->
+            <span class="text-[10px] font-bold px-2 py-0.5 rounded ${e.badgeClass}">${e.badge}</span>
+            <span class="text-[10px] font-mono text-gray-500">限時優惠</span>
+          </div>
+
+          <!-- Reward & Title Content - Scaled to text-sm & text-xs for mobile legibility -->
+          <div class="relative mb-3">
+            <div class="flex justify-between items-center mb-1">
+              <h4 class="text-white text-sm font-bold leading-tight line-clamp-1 group-hover:text-gold transition">${e.title}</h4>
+              <span class="text-gold-light font-black text-sm whitespace-nowrap text-gold-gradient ml-2">${e.reward}</span>
+            </div>
+            <p class="text-xs text-gray-400 line-clamp-2 leading-relaxed">${e.summary}</p>
+          </div>
+
+          <!-- Dynamic steps flow -->
+          ${stepsSectionHTML}
+
+          <!-- Action Button Area -->
+          <div class="relative flex justify-between items-center mt-1">
+            <span class="text-[10px] text-gray-500 flex items-center gap-1">
+              <span>📅</span><span>即時結算</span>
+            </span>
+            <button onclick="${btnClick}" class="${btnClass}">
+              ${btnText}
+            </button>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+
+
+    // Main action controller (Claim / Participate)
+    function handleAction(id) {
+      const e = activeEvents.find(x => x.id === id);
+      if (!e) return;
+
+      const state = userPromoStates[id];
+      if (e.actionType === 'claim_instant') {
+        // Sign-in or instant claim reward
+        state.status = 'claimed';
+        state.timeClaimed = new Date().toLocaleString();
+        saveStates();
+        renderEvents();
+        
+        // Trigger particle animation!
+        triggerConfettiAnimation();
+        showToast(`🎉 領取成功！已派發 ¥88 到您的彩金餘額`);
+        
+        // Add log record
+        addRecordLog(e.title, '¥88.00', '自動核准到帳');
+      } else {
+        // Need registration
+        state.status = 'registered';
+        saveStates();
+        renderEvents();
+        showToast(`✅ 報名成功！請根據「三步曲流程」前往完成條件`);
+      }
+    }
+
+    // Simulated task actions
+    function triggerSimulatedDeposit(id) {
+      const e = activeEvents.find(x => x.id === id);
+      if (!e) return;
+      const state = userPromoStates[id];
+      
+      showToast('💵 模擬充值中... 已存入 ¥1,000');
+      
+      setTimeout(() => {
+        state.status = 'claimed';
+        state.timeClaimed = new Date().toLocaleString();
+        saveStates();
+        renderEvents();
+        triggerConfettiAnimation();
+        showToast(`🎉 充值達標！首存紅利 ${e.reward} 已成功派發！`);
+        addRecordLog(e.title, e.reward, '充值達標送金');
+      }, 1500);
+    }
+
+    function triggerSimulatedBetting(id) {
+      const e = activeEvents.find(x => x.id === id);
+      if (!e) return;
+      const state = userPromoStates[id];
+      
+      showToast('🎰 模擬遊戲中... 已累積所需流水');
+      
+      setTimeout(() => {
+        state.status = 'claimed';
+        state.timeClaimed = new Date().toLocaleString();
+        saveStates();
+        renderEvents();
+        triggerConfettiAnimation();
+        showToast(`🎉 流水達標！活動獎勵 ${e.reward} 已派發！`);
+        addRecordLog(e.title, e.reward, '流水達標返還');
+      }, 1500);
+    }
+
+    // Claim Records management
+    function getRecords() {
+      const stored = localStorage.getItem('bc_promo_records');
+      return stored ? JSON.parse(stored) : [];
+    }
+
+    function addRecordLog(title, amount, notes) {
+      const records = getRecords();
+      records.unshift({
+        title,
+        amount,
+        notes,
+        time: new Date().toLocaleString()
+      });
+      localStorage.setItem('bc_promo_records', JSON.stringify(records));
+    }
+
+    function openRecordModal() {
+      const container = document.getElementById('recordListContent');
+      container.innerHTML = '';
+      
+      const records = getRecords();
+      if (records.length === 0) {
+        container.innerHTML = `<div class="text-center py-10 text-gray-500 text-xs">當前無任何紅利領取紀錄</div>`;
+      } else {
+        records.forEach(r => {
+          const div = document.createElement('div');
+          div.className = "bg-surface-card border border-surface-border/40 p-3 rounded-xl flex items-center justify-between";
+          div.innerHTML = `
+            <div>
+              <p class="text-xs font-bold text-white">${r.title}</p>
+              <p class="text-[9px] text-gray-500 mt-1 font-mono">${r.time}</p>
+            </div>
+            <div class="text-right">
+              <span class="text-xs text-gold font-bold font-mono">${r.amount}</span>
+              <p class="text-[8px] text-emerald-400 mt-1">${r.notes}</p>
+            </div>
+          `;
+          container.appendChild(div);
+        });
+      }
+      document.getElementById('recordModal').classList.remove('hidden');
+    }
+
+    function closeRecordModal() {
+      document.getElementById('recordModal').classList.add('hidden');
+    }
+
+    // Screen Notification Toast helper
+    function showToast(msg) {
+      const toast = document.createElement('div');
+      toast.className = "fixed top-24 left-1/2 -translate-x-1/2 bg-[#0c1017] border border-gold/40 text-gold-light text-[11px] font-bold py-2.5 px-5 rounded-full shadow-2xl z-50 flex items-center gap-1.5 transition-all duration-300 opacity-0 translate-y-2";
+      toast.innerHTML = `<span>⚡</span><span>${msg}</span>`;
+      document.body.appendChild(toast);
+      
+      setTimeout(() => {
+        toast.classList.remove('opacity-0', 'translate-y-2');
+      }, 50);
+      
+      setTimeout(() => {
+        toast.classList.add('opacity-0', '-translate-y-2');
+        setTimeout(() => toast.remove(), 300);
+      }, 2500);
+    }
+
+
+    // ═══ Gold Coins Particle Animation (Canvas implementation) ═══
+    const canvas = document.getElementById('particle-canvas');
+    const ctx = canvas.getContext('2d');
+    
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    let particles = [];
+    let animationId = null;
+
+    class Coin {
+      constructor(x, y) {
+        this.x = x;
+        this.y = y;
+        this.radius = Math.random() * 5 + 4;
+        this.color = Math.random() > 0.5 ? '#d4a853' : '#f5e6b8'; // Gold gradients
+        this.speedX = Math.random() * 6 - 3;
+        this.speedY = Math.random() * -10 - 5; // Upwards burst
+        this.gravity = 0.4;
+        this.opacity = 1;
+        this.rotation = Math.random() * Math.PI;
+        this.rotationSpeed = Math.random() * 0.2 - 0.1;
+      }
+      update() {
+        this.speedY += this.gravity;
+        this.x += this.speedX;
+        this.y += this.speedY;
+        this.rotation += this.rotationSpeed;
+        if (this.y > canvas.height) {
+          this.opacity = 0;
+        } else {
+          this.opacity -= 0.008; // Fade out slowly
+        }
+      }
+      draw() {
+        ctx.save();
+        ctx.translate(this.x, this.y);
+        ctx.rotate(this.rotation);
+        ctx.globalAlpha = Math.max(0, this.opacity);
+        ctx.beginPath();
+        // Draw coin shape
+        ctx.arc(0, 0, this.radius, 0, Math.PI * 2);
+        ctx.fillStyle = this.color;
+        ctx.shadowColor = 'rgba(212, 168, 83, 0.4)';
+        ctx.shadowBlur = 6;
+        ctx.fill();
+        // Inner coin detail
+        ctx.beginPath();
+        ctx.arc(0, 0, this.radius * 0.6, 0, Math.PI * 2);
+        ctx.strokeStyle = 'rgba(0,0,0,0.15)';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+        ctx.restore();
+      }
+    }
+
+    function triggerConfettiAnimation() {
+      // Spawn points centered inside the active mobile frame
+      const x = window.innerWidth / 2;
+      const y = window.innerHeight * 0.7; // Lower center
+      
+      // Spawn 80 particles
+      for (let i = 0; i < 80; i++) {
+        particles.push(new Coin(x, y));
+      }
+      
+      if (!animationId) {
+        animateParticles();
+      }
+    }
+
+    function animateParticles() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      particles.forEach((p, idx) => {
+        p.update();
+        p.draw();
+        if (p.opacity <= 0) {
+          particles.splice(idx, 1);
+        }
+      });
+
+      if (particles.length > 0) {
+        animationId = requestAnimationFrame(animateParticles);
+      } else {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        animationId = null;
+      }
+    }
+
+    // Check URL parameters on boot to auto-redirect to detail page
+    function checkUrlParams() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const targetId = urlParams.get('id');
+      if (targetId) {
+        const e = activeEvents.find(x => x.id === targetId);
+        if (e && e.visible !== false) {
+          window.location.href = `detail.html?id=${targetId}`;
+        }
+      }
+    }
+
+    // Auto-refresh when tab gains focus (sync edits from admin panel)
+    window.addEventListener('focus', () => {
+      init();
+    });
+
+    // Boot execution
+    init();
+    checkUrlParams();
+  </script>
+
+</body>
+</html>

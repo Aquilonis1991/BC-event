@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BC 娛樂城 - 活動詳細頁面</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            gold: { DEFAULT: '#d4a853', light: '#f5e6b8', dark: '#a67c2e' },
+            surface: { DEFAULT: '#0d1117', card: '#161b22', raised: '#1c2333', border: '#2d3548' }
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=Noto+Sans+TC:wght@400;500;700&display=swap');
+    body {
+      font-family: 'Outfit', 'Noto Sans TC', system-ui, -apple-system, sans-serif;
+      background-color: #080b10;
+    }
+    .glass-panel {
+      background: linear-gradient(135deg, rgba(22, 27, 34, 0.8) 0%, rgba(13, 17, 23, 0.9) 100%);
+      border: 1px solid rgba(212, 168, 83, 0.15);
+    }
+  </style>
+</head>
+<body class="text-gray-200 min-h-screen flex flex-col justify-center items-center bg-[#0c0f16] p-4">
+
+  <!-- Minimalistic Smartphone frame container -->
+  <div class="w-full max-w-md glass-panel rounded-3xl shadow-2xl p-6 relative overflow-hidden flex flex-col justify-between min-h-[400px]">
+    
+    <!-- Top Bar Navigation -->
+    <div class="flex justify-between items-center border-b border-surface-border/40 pb-4 mb-6">
+      <button onclick="goBack()" class="text-xs font-bold text-gray-400 hover:text-white transition flex items-center gap-1">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/></svg>
+        返回大廳
+      </button>
+      <span class="text-[10px] font-bold text-gold px-2.5 py-0.5 rounded-full bg-gold/10 border border-gold/20 animate-pulse" id="detailId">PROMO</span>
+    </div>
+
+    <!-- Main Placeholder Message -->
+    <div class="flex-1 flex flex-col justify-center items-center text-center space-y-4 my-6">
+      
+      <div class="space-y-2.5">
+        <span class="text-[10px] font-bold text-gray-500 uppercase tracking-widest block">System Notice</span>
+        <h1 class="text-white text-base font-bold">活動獨立專屬詳細頁面</h1>
+        <p class="text-xs text-gray-400 leading-relaxed max-w-xs mx-auto">
+          此頁面為活動 <span class="text-gold font-mono font-bold" id="detailTextId"></span> 的獨立專屬活動詳細介紹頁。
+        </p>
+      </div>
+
+    </div>
+
+    <!-- Bottom Actions -->
+    <div class="border-t border-surface-border/40 pt-4 mt-6">
+      <button onclick="goBack()" class="w-full py-2.5 bg-gradient-to-r from-gold via-gold to-gold-dark text-black font-bold text-xs rounded-xl hover:brightness-110 transition shadow-lg shadow-gold/10">
+        我知道了，返回大廳
+      </button>
+    </div>
+
+  </div>
+
+  <script>
+    function init() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const targetId = urlParams.get('id') || 'PROMO005';
+      
+      document.getElementById('detailId').textContent = targetId;
+      document.getElementById('detailTextId').textContent = targetId;
+    }
+
+    function goBack() {
+      window.location.href = 'index.html';
+    }
+
+    init();
+  </script>
+</body>
+</html>

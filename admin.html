@@ -1,0 +1,1047 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>運營管理系統 - 優惠活動與提現大廳</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: { DEFAULT: '#0052d9', hover: '#0045b5', light: '#e1ecff' },
+            sidebar: { bg: '#1e222d', hover: '#2c3243', active: '#0052d9' },
+            // BC App Custom Colors for Live Card Preview
+            gold: { DEFAULT: '#d4a853', light: '#f5e6b8', dark: '#a67c2e' },
+            surface: { DEFAULT: '#0d1117', card: '#161b22', raised: '#1c2333', border: '#2d3548' }
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=Noto+Sans+TC:wght@300;400;500;700&display=swap');
+    body {
+      font-family: 'Outfit', 'Noto Sans TC', system-ui, -apple-system, sans-serif;
+      background-color: #f5f7fa;
+    }
+    .menu-active {
+      background-color: #0052d9;
+      color: #ffffff !important;
+    }
+    ::-webkit-scrollbar { width: 5px; height: 5px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(0, 0, 0, 0.15); border-radius: 3px; }
+    
+    /* Gold gradient text & Glassmorphism styles matching player lobby */
+    .text-gold-gradient {
+      background: linear-gradient(135deg, #ffeaa7 0%, #d4a853 50%, #a67c2e 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .neon-glow-gold {
+      box-shadow: 0 0 8px rgba(212, 168, 83, 0.5);
+    }
+    .glass-panel {
+      background: linear-gradient(135deg, rgba(22, 27, 34, 0.8) 0%, rgba(13, 17, 23, 0.9) 100%);
+      border: 1px solid rgba(212, 168, 83, 0.15);
+    }
+  </style>
+</head>
+<body class="text-gray-800 min-h-screen flex selection:bg-primary selection:text-white">
+
+  <!-- LEFT SIDEBAR: Shopline style dark navbar -->
+  <aside class="w-64 bg-sidebar-bg text-gray-300 flex-shrink-0 flex flex-col justify-between shadow-lg sticky top-0 h-screen z-20">
+    <div>
+      <!-- Sidebar Brand Header -->
+      <div class="px-6 py-5 border-b border-gray-700/50 flex items-center gap-2.5">
+        <div class="w-7 h-7 bg-primary rounded flex items-center justify-center font-bold text-white text-sm">BC</div>
+        <div>
+          <h2 class="text-sm font-bold text-white tracking-wider">運營管理系統</h2>
+          <p class="text-[9px] text-gray-500 font-mono tracking-tight">SHOPLINE INTEGRATED</p>
+        </div>
+      </div>
+
+      <!-- Navigation Menu -->
+      <nav class="px-3 py-4 space-y-1 text-xs">
+        <button onclick="switchSubTab('list')" id="tab-list" class="menu-active w-full flex items-center gap-2.5 px-4 py-3 rounded-lg text-white font-medium">
+          <span>活動配置列表</span>
+        </button>
+        <button onclick="switchSubTab('form')" id="tab-form" class="w-full flex items-center gap-2.5 px-4 py-3 rounded-lg text-gray-400 hover:bg-sidebar-hover hover:text-white transition font-medium">
+          <span>新增自訂活動</span>
+        </button>
+      </nav>
+    </div>
+
+    <!-- Sidebar Footer -->
+    <div class="p-4 border-t border-gray-700/50 text-[10px] text-gray-500 space-y-2">
+      <div class="bg-gray-800/40 p-2.5 rounded-lg border border-gray-700/30">
+        <p class="font-bold text-gray-400">當前操作員</p>
+        <p class="text-[11px] text-gray-300 mt-1">營運風控主管 (Staff09)</p>
+      </div>
+      <button onclick="resetToDefault()" class="w-full bg-red-950/60 hover:bg-red-900/80 text-red-200 border border-red-900/40 font-bold text-[10px] py-1.5 rounded-lg transition text-center mt-2 flex items-center justify-center gap-1.5">
+        <span>重置系統展示數據</span>
+      </button>
+    </div>
+  </aside>
+
+  <!-- RIGHT CONTENT AREA -->
+  <div class="flex-1 flex flex-col min-w-0">
+    
+    <!-- Top Navbar Bar -->
+    <header class="bg-white border-b border-gray-200 h-14 flex items-center justify-between px-6 z-10">
+      <div class="flex items-center gap-2">
+        <span class="text-gray-400 text-xs">當前面板:</span>
+        <h2 id="topBarTitle" class="text-xs font-bold text-gray-800">優惠活動配置大廳</h2>
+      </div>
+
+      <!-- Links -->
+      <div class="flex items-center gap-3">
+        <a href="index.html" target="_blank" class="text-[11px] bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 font-bold px-3 py-1.5 rounded-full transition">
+          開啟前台活動大廳 ↗
+        </a>
+      </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="flex-grow p-6 overflow-y-auto space-y-6">
+
+      <!-- ============================================== -->
+      <!-- VIEW 1: 活動配置列表 -->
+      <!-- ============================================== -->
+      <div id="view-list-container" class="space-y-6">
+        <div class="bg-white rounded-xl border border-gray-200/80 shadow-sm p-6 space-y-5">
+          <div class="flex justify-between items-center border-b border-gray-100 pb-3.5">
+            <h3 class="text-sm font-bold text-gray-800 flex items-center gap-1.5">
+              <span>活動配置列表</span>
+            </h3>
+            <span class="text-[11px] text-gray-400 font-mono font-bold" id="recordsCount">共 0 個活動</span>
+          </div>
+
+          <!-- Table container -->
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse text-xs">
+              <thead>
+                <tr class="bg-gray-50/50 border-b border-gray-200/60 text-gray-400 font-bold uppercase tracking-wider text-[10px]">
+                  <th class="px-5 py-3.5 font-bold font-mono">編號</th>
+                  <th class="px-5 py-3.5 font-bold">活動基本資訊</th>
+                  <th class="px-5 py-3.5 font-bold">遊戲分類</th>
+                  <th class="px-5 py-3.5 font-bold">智慧標籤</th>
+                  <th class="px-5 py-3.5 font-bold">顯示時間</th>
+                  <th class="px-5 py-3.5 font-bold text-center">排序</th>
+                  <th class="px-5 py-3.5 text-center">操作管理</th>
+                </tr>
+              </thead>
+              <tbody id="adminTableBody" class="divide-y divide-gray-100 text-gray-600">
+                <!-- Rows loaded dynamically -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============================================== -->
+      <!-- VIEW 2: 新增/編輯自訂優惠活動表單 (與右側卡片預覽) -->
+      <!-- ============================================== -->
+      <div id="view-form-container" class="hidden space-y-6">
+        <div class="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-6">
+          
+          <!-- Left Column: Form -->
+          <div class="lg:col-span-2 bg-white rounded-xl border border-gray-200/80 shadow-sm p-6 space-y-5">
+            <h3 class="text-sm font-bold text-primary border-b border-gray-100 pb-3.5 flex items-center gap-1.5">
+              <span id="formTitleIcon"></span>
+              <span id="formTitle">新增自訂優惠活動</span>
+            </h3>
+
+            <form id="activityForm" onsubmit="saveActivityForm(event)" class="space-y-4 text-xs">
+              <input type="hidden" id="editIndex" value="-1">
+
+              <!-- ID and Title -->
+              <div class="grid grid-cols-3 gap-4">
+                <div class="col-span-1">
+                  <label class="block text-gray-500 mb-1.5 font-medium">活動編號 (ID)</label>
+                  <input type="text" id="actId" required placeholder="PROMO009" class="w-full bg-gray-50 border border-gray-200 rounded-lg p-2.5 text-gray-800 placeholder-gray-400 focus:outline-none focus:border-primary focus:bg-white transition">
+                </div>
+                <div class="col-span-2">
+                  <label class="block text-gray-500 mb-1.5 font-medium">活動名稱</label>
+                  <input type="text" id="actTitle" required placeholder="例如：限時老虎機挑戰賽" oninput="updateCardPreview()" class="w-full bg-gray-50 border border-gray-200 rounded-lg p-2.5 text-gray-800 placeholder-gray-400 focus:outline-none focus:border-primary focus:bg-white transition">
+                </div>
+              </div>
+
+              <!-- Reward and Category -->
+              <div class="grid grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-gray-500 mb-1.5 font-medium">活動獎勵金額/字樣</label>
+                  <input type="text" id="actReward" required placeholder="例如：送 ¥8,888 或 100% 包賠" oninput="updateCardPreview()" class="w-full bg-gray-50 border border-gray-200 rounded-lg p-2.5 text-gray-800 placeholder-gray-400 focus:outline-none focus:border-primary focus:bg-white transition">
+                </div>
+                <div>
+                  <label class="block text-gray-500 mb-1.5 font-medium">遊戲分類</label>
+                  <select id="actCategory" class="w-full bg-gray-50 border border-gray-200 rounded-lg p-2.5 text-gray-800 focus:outline-none focus:border-primary focus:bg-white transition">
+                    <!-- Loaded dynamically -->
+                  </select>
+                  <!-- Add dynamic category control -->
+                  <div class="mt-2 flex gap-2">
+                    <input type="text" id="newCategoryName" placeholder="新增自訂分類..." class="flex-1 bg-gray-50 border border-gray-200 rounded px-2 py-1 text-[11px] placeholder-gray-400 focus:outline-none focus:border-primary focus:bg-white transition">
+                    <button type="button" onclick="addNewCategory()" class="bg-primary/10 hover:bg-primary/20 text-primary font-bold px-3 py-1 rounded text-[11px] border border-primary/20 transition">
+                      新增
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Summary & Description -->
+              <div>
+                <label class="block text-gray-500 mb-1.5 font-medium">前台摘要 (卡片大綱說明)</label>
+                <input type="text" id="actSummary" required placeholder="例如：電子暢玩，首損包賠 100%。" oninput="updateCardPreview()" class="w-full bg-gray-50 border border-gray-200 rounded-lg p-2.5 text-gray-800 placeholder-gray-400 focus:outline-none focus:border-primary focus:bg-white transition">
+              </div>
+              <div>
+                <label class="block text-gray-500 mb-1.5 font-medium">活動詳細說明 (規則細節)</label>
+                <textarea id="actDesc" rows="4" required placeholder="輸入活動的詳細條件與規則細節..." class="w-full bg-gray-50 border border-gray-200 rounded-lg p-2.5 text-gray-800 placeholder-gray-400 focus:outline-none focus:border-primary focus:bg-white resize-none transition"></textarea>
+              </div>
+
+              <!-- Smart Tags Checklist -->
+              <div>
+                <label class="block text-gray-500 mb-1.5 font-medium">智慧推薦篩選標籤 (複選)</label>
+                <div id="tagCheckboxesContainer" class="grid grid-cols-5 gap-3 bg-gray-50 p-3 rounded-lg border border-gray-200/60">
+                  <!-- Loaded dynamically -->
+                </div>
+                <!-- Add dynamic tag control -->
+                <div class="mt-2 flex gap-2 max-w-sm">
+                  <input type="text" id="newTagName" placeholder="新增自訂推薦標籤..." class="flex-1 bg-gray-50 border border-gray-200 rounded px-2 py-1 text-[11px] placeholder-gray-400 focus:outline-none focus:border-primary focus:bg-white transition">
+                  <button type="button" onclick="addNewTag()" class="bg-primary/10 hover:bg-primary/20 text-primary font-bold px-3 py-1 rounded text-[11px] border border-primary/20 transition">
+                    新增
+                  </button>
+                </div>
+              </div>
+
+              <!-- Badge and styling -->
+              <div class="grid grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-gray-500 mb-1.5 font-medium">發光小徽章文字</label>
+                  <input type="text" id="actBadge" required placeholder="例如：零流水" oninput="updateLiveBadgePreview()" class="w-full bg-gray-50 border border-gray-200 rounded-lg p-2.5 text-gray-800 placeholder-gray-400 focus:outline-none focus:border-primary focus:bg-white transition">
+                </div>
+                <div>
+                  <label class="block text-gray-500 mb-1.5 font-medium">徽章配色樣式</label>
+                  <select id="actBadgeStyle" onchange="updateLiveBadgePreview()" class="w-full border rounded-lg p-2.5 focus:outline-none transition bg-emerald-500/10 text-emerald-500 border-emerald-500/20">
+                    <option value="bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">翡翠綠 (推薦極速)</option>
+                    <option value="bg-red-500/10 text-red-500 border border-red-500/20">鮮豔紅 (高額熱門)</option>
+                    <option value="bg-amber-500/10 text-amber-500 border border-amber-500/20">琥珀橘 (限時快結束)</option>
+                    <option value="bg-blue-500/10 text-blue-500 border border-blue-500/20">靛藍色 (安全賠付)</option>
+                    <option value="bg-purple-500/10 text-purple-500 border border-purple-500/20">紫羅蘭 (VIP限定)</option>
+                    <option value="bg-pink-500/10 text-pink-500 border border-pink-500/20">玫瑰粉 (節慶限時)</option>
+                    <option value="bg-cyan-500/10 text-cyan-500 border border-cyan-500/20">天空青 (首存禮包)</option>
+                    <option value="bg-teal-500/10 text-teal-500 border border-teal-500/20">薄荷綠 (流水返利)</option>
+                    <option value="bg-yellow-500/10 text-yellow-500 border border-yellow-500/20">奢華金 (特級彩金)</option>
+                    <option value="bg-indigo-500/10 text-indigo-500 border border-indigo-500/20">深靛紫 (特別回饋)</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- Steps (1 to 4 steps, optional) -->
+              <div class="bg-gray-50 p-3 rounded-lg border border-gray-200/60 space-y-2.5">
+                <label class="block text-gray-500 font-bold">活動流程步驟 (支援 1~4 步，非必填)</label>
+                <div class="grid grid-cols-4 gap-3">
+                  <input type="text" id="actStep1" placeholder="步驟 1" oninput="updateCardPreview()" class="w-full bg-white border border-gray-200 rounded-lg p-2 text-gray-800 placeholder-gray-400 focus:outline-none focus:border-primary">
+                  <input type="text" id="actStep2" placeholder="步驟 2" oninput="updateCardPreview()" class="w-full bg-white border border-gray-200 rounded-lg p-2 text-gray-800 placeholder-gray-400 focus:outline-none focus:border-primary">
+                  <input type="text" id="actStep3" placeholder="步驟 3" oninput="updateCardPreview()" class="w-full bg-white border border-gray-200 rounded-lg p-2 text-gray-800 placeholder-gray-400 focus:outline-none focus:border-primary">
+                  <input type="text" id="actStep4" placeholder="步驟 4" oninput="updateCardPreview()" class="w-full bg-white border border-gray-200 rounded-lg p-2 text-gray-800 placeholder-gray-400 focus:outline-none focus:border-primary">
+                </div>
+              </div>
+
+              <!-- Weight & Action type -->
+              <div class="grid grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-gray-500 mb-1.5 font-medium">排序權重 (大在前)</label>
+                  <input type="number" id="actWeight" required placeholder="0" class="w-full bg-gray-50 border border-gray-200 rounded-lg p-2.5 text-gray-800 placeholder-gray-400 focus:outline-none focus:border-primary focus:bg-white transition">
+                </div>
+                <div>
+                  <label class="block text-gray-500 mb-1.5 font-medium">按鈕交互行為</label>
+                  <select id="actActionType" onchange="updateCardPreview()" class="w-full bg-gray-50 border border-gray-200 rounded-lg p-2.5 text-gray-800 focus:outline-none focus:border-primary focus:bg-white transition">
+                    <option value="claim_instant">⚡ 一鍵領取 (立即領取)</option>
+                    <option value="go_deposit">一鍵參賽 (充值型活動)</option>
+                    <option value="register">一鍵報名 (流水型活動)</option>
+                    <option value="claimed_auto">🟢 自動返水中 (無按鈕點擊)</option>
+                    <option value="go_deposit_active">💰 去充值達標 (參賽後充值中)</option>
+                    <option value="register_active">🎮 去投注流水 (報名後打流水中)</option>
+                    <option value="claimed">✓ 已領取彩金 (已領取完成)</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- Visibility & Display Time -->
+              <div class="grid grid-cols-3 gap-4">
+                <div>
+                  <label class="block text-gray-500 mb-1.5 font-medium">前台顯示</label>
+                  <select id="actVisible" class="w-full bg-gray-50 border border-gray-200 rounded-lg p-2.5 text-gray-800 focus:outline-none focus:border-primary focus:bg-white transition">
+                    <option value="true">顯示</option>
+                    <option value="false">隱藏</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block text-gray-500 mb-1.5 font-medium">顯示開始時間</label>
+                  <input type="datetime-local" id="actStartTime" class="w-full bg-gray-50 border border-gray-200 rounded-lg p-2 text-gray-800 focus:outline-none focus:border-primary focus:bg-white transition">
+                </div>
+                <div>
+                  <label class="block text-gray-500 mb-1.5 font-medium">顯示結束時間</label>
+                  <input type="datetime-local" id="actEndTime" class="w-full bg-gray-50 border border-gray-200 rounded-lg p-2 text-gray-800 focus:outline-none focus:border-primary focus:bg-white transition">
+                </div>
+              </div>
+
+              <!-- Form Actions -->
+              <div class="flex gap-3 pt-3 justify-end max-w-md ml-auto">
+                <button type="button" onclick="resetForm(); switchSubTab('list');" class="flex-1 py-2.5 bg-white border border-gray-200 hover:bg-gray-50 rounded-lg text-gray-500 font-bold transition text-center">
+                  取消
+                </button>
+                <button type="submit" class="flex-1 py-2.5 bg-primary hover:bg-primary-hover text-white font-bold rounded-lg transition text-center">
+                  儲存設定
+                </button>
+              </div>
+
+            </form>
+          </div>
+
+          <!-- Right Column: Card Preview -->
+          <div class="lg:col-span-1 space-y-4">
+            <div class="sticky top-6 bg-[#0c1017] rounded-xl border border-gray-800 shadow-xl p-5 text-xs text-gray-300">
+              <div class="flex justify-between items-center border-b border-gray-800 pb-3 mb-4">
+                <span class="text-white font-bold">📲 前台卡片即時預覽</span>
+                <span class="text-[9px] bg-gold/10 text-gold px-1.5 py-0.5 rounded font-mono font-bold border border-gold/20">模擬端</span>
+              </div>
+              
+              <!-- Smartphone frame preview -->
+              <div class="relative glass-panel rounded-2xl p-4 flex flex-col justify-between hover:border-gold/30 transition duration-300 group min-h-[160px]">
+                <!-- Glow background effect -->
+                <div class="absolute inset-0 bg-gradient-to-r from-gold/5 to-transparent rounded-2xl opacity-100 transition duration-300"></div>
+                
+                <div class="relative flex justify-between items-start mb-2">
+                  <!-- Dynamic Badge -->
+                  <span id="previewBadge" class="text-[9px] font-bold px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">零流水</span>
+                  <span class="text-[9px] font-mono text-gray-500">限時優惠</span>
+                </div>
+
+                <!-- Reward & Title Content -->
+                <div class="relative mb-3">
+                  <div class="flex justify-between items-center mb-1">
+                    <h4 id="previewTitle" class="text-white text-xs font-bold leading-tight line-clamp-1 group-hover:text-gold transition">每日登入簽到送彩金</h4>
+                    <span id="previewReward" class="text-gold-light font-black text-sm whitespace-nowrap text-gold-gradient ml-2">送 ¥88</span>
+                  </div>
+                  <p id="previewSummary" class="text-[11px] text-gray-400 line-clamp-2 leading-relaxed">懶人專屬！每日只需登入點擊，即可領取 ¥88 彩金。</p>
+                </div>
+
+                <!-- Dynamic steps flow -->
+                <div id="previewStepsContainer" class="bg-black/20 rounded-xl p-2 border border-gray-800/60 mb-3 hidden">
+                  <!-- Dynamic steps rendered here -->
+                </div>
+
+                <!-- Action Button Area -->
+                <div class="relative flex justify-between items-center mt-1">
+                  <span class="text-[9px] text-gray-500 flex items-center gap-1">
+                    <span>📅</span><span>即時結算</span>
+                  </span>
+                  <button id="previewBtn" class="bg-gradient-to-r from-gold via-gold to-gold/90 text-black hover:brightness-110 text-[9px] py-1 px-2.5 rounded font-bold transition">
+                    一鍵即領
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ============================================== -->
+      <!-- TAB 2: 風控審核佇列 (High-fidelity Mock View) -->
+
+
+    </main>
+  </div>
+
+  <!-- Notification Toast Helper -->
+  <div id="toast" class="fixed top-8 left-1/2 -translate-x-1/2 bg-gray-900 border border-gray-800 text-white text-[11px] font-bold py-2.5 px-5 rounded-lg shadow-2xl z-50 flex items-center gap-1.5 transition-all duration-300 opacity-0 pointer-events-none translate-y-2">
+    <span></span><span id="toastText"></span>
+  </div>
+
+  <script>
+
+
+    // System fallback default data template (mirroring index.html initial state)
+    const defaultMockEvents = [
+      {
+        id: 'PROMO001',
+        title: '每日登入簽到送彩金',
+        reward: '送 ¥88',
+        summary: '懶人專屬！每日只需登入點擊，即可領取 ¥88 彩金。',
+        desc: '本活動面向全體BC會員，每日均可簽到領取。彩金無流水限制直接到帳！',
+        category: 'slots',
+        tags: ['easy', 'featured'],
+        badge: '零流水',
+        badgeClass: 'bg-emerald-500/10 text-emerald-600 border border-emerald-500/20',
+        steps: ['點擊簽到', '發放彩金', '極速到帳'],
+        weight: 10,
+        actionType: 'claim_instant',
+        visible: true
+      },
+      {
+        id: 'PROMO002',
+        title: '新人首存驚喜特大禮包',
+        reward: '送 ¥1,888',
+        summary: '新手首充加贈 100%！最高可領 ¥1,888 巨額彩金。',
+        desc: '新會員首次存款 ¥100 以上，即享 100% 存款禮包。大額存送，適合想挑戰特大獎項的玩家。',
+        category: 'slots',
+        tags: ['high', 'featured'],
+        badge: '超高性價',
+        badgeClass: 'bg-red-500/10 text-red-600 border border-red-500/20',
+        steps: ['充值 ¥1,000', '自動配對', '送 ¥1,888'],
+        weight: 9,
+        actionType: 'go_deposit',
+        visible: true
+      },
+      {
+        id: 'PROMO003',
+        title: '電子打水首存全包賠保險',
+        reward: '包賠 100%',
+        summary: '不怕輸！首筆電子遊戲產生虧損，平台 100% 包賠退還。',
+        desc: '凡參與電子遊戲首充的玩家，如當日虧損，將於次日清算時 100% 賠付返還至帳戶餘額，無後顧之憂！',
+        category: 'slots',
+        tags: ['rebate', 'featured'],
+        badge: '賠付保障',
+        badgeClass: 'bg-blue-500/10 text-blue-600 border border-blue-500/20',
+        steps: ['玩電子遊戲', '產生虧損', '100% 退還'],
+        weight: 8,
+        actionType: 'register',
+        visible: true
+      },
+      {
+        id: 'PROMO004',
+        title: '數字人民幣限時充值加贈',
+        reward: '加贈 5.0%',
+        summary: '限時福利！使用數字人民幣充值，單筆額外加碼 5% 無上限。',
+        desc: '為推廣央行數字人民幣，使用數字人幣充值通道存款，每筆加贈 5% 彩金。剩餘時間不多，欲拿從速！',
+        category: 'slots',
+        tags: ['easy', 'ending'],
+        badge: '限時 2 小時',
+        badgeClass: 'bg-amber-500/10 text-amber-600 border border-amber-500/20',
+        steps: ['數幣充值', '額外加贈 5%', '即時入帳'],
+        weight: 7,
+        actionType: 'go_deposit',
+        visible: true
+      },
+      {
+        id: 'PROMO005',
+        title: '棋牌對戰大賽瓜分百萬',
+        reward: '瓜分 ¥100萬',
+        summary: '挑戰大獎！累積勝場即可與眾多玩家共同瓜分百萬獎金。',
+        desc: '在棋牌遊戲（如德州、鬥地主）中，每獲得一次勝利累積 1 個勝分，累積前 100 名的玩家可按比例瓜分百萬紅包！',
+        category: 'board',
+        tags: ['high'],
+        badge: '百萬獎池',
+        badgeClass: 'bg-gold/15 text-gold border border-gold/30',
+        steps: ['參與棋牌對局', '累積勝場', '分百萬獎金'],
+        weight: 6,
+        actionType: 'register',
+        visible: true
+      },
+      {
+        id: 'PROMO006',
+        title: '百家真人返水天天送',
+        reward: '返水 1.2%',
+        summary: '不計輸贏！每日投注真人視訊百家樂，無上限返還 1.2%。',
+        desc: '凡投注真人視訊大廳的會員，每日不計輸贏，隔日中午 12:00 自動返還 1.2% 流水金，隨投隨送！',
+        category: 'live',
+        tags: ['rebate', 'easy'],
+        badge: '天天返水',
+        badgeClass: 'bg-emerald-500/10 text-emerald-600 border border-emerald-500/20',
+        steps: ['真人百家', '累積投注', '返水 1.2%'],
+        weight: 5,
+        actionType: 'claimed_auto',
+        visible: true
+      },
+      {
+        id: 'PROMO007',
+        title: '捕魚達人爆金翻倍大獎',
+        reward: '翻倍 ¥8,888',
+        summary: '捕獲黃金龍王，掉落倍數加成，最高直接翻倍獎金。',
+        desc: '於捕魚大廳捕獲指定金龍王或 Boss，可觸發爆金事件，所得分值直接翻倍，上限 ¥8,888。',
+        category: 'fish',
+        tags: ['high'],
+        badge: '爆金倍數',
+        badgeClass: 'bg-purple-500/10 text-purple-600 border border-purple-500/20',
+        steps: ['進入捕魚遊戲', '捕獲黃金龍', '最高翻倍 8K'],
+        weight: 4,
+        actionType: 'register',
+        visible: true
+      },
+      {
+        id: 'PROMO008',
+        title: '體育滾球連贏特大紅包',
+        reward: '連贏送 ¥6,666',
+        summary: '體育賽事滾球盤連贏 5 場以上，送驚喜開運紅包！',
+        desc: '投注體育滾球，如連續中獎 5 單以上，單筆滿額 ¥100 即可申請對應連贏大紅包。',
+        category: 'sports',
+        tags: ['high'],
+        badge: '連贏熱潮',
+        badgeClass: 'bg-red-500/10 text-red-600 border border-red-500/20',
+        steps: ['體育滾球盤', '連贏 5 單', '送 ¥6,666'],
+        weight: 3,
+        actionType: 'register',
+        visible: true
+      }
+    ];
+
+    let eventsConfig = [];
+
+    // Category mapping dictionary (loaded dynamically)
+    let categoryNames = {};
+    // Tag mapping dictionary (loaded dynamically)
+    let tagNames = {};
+
+    const defaultCategories = {
+      slots: '電子',
+      board: '棋牌',
+      fish: '捕魚',
+      live: '真人',
+      sports: '體育',
+      lottery: '彩票'
+    };
+
+    const defaultTags = {
+      featured: '精選推薦',
+      easy: '懶人首選',
+      high: '高額彩金',
+      rebate: '安全防護',
+      ending: '即將結束'
+    };
+
+    function initCategoriesAndTags() {
+      const storedCats = localStorage.getItem('bc_categories');
+      if (storedCats) {
+        categoryNames = JSON.parse(storedCats);
+      } else {
+        categoryNames = { ...defaultCategories };
+        localStorage.setItem('bc_categories', JSON.stringify(categoryNames));
+      }
+
+      const storedTags = localStorage.getItem('bc_tags');
+      if (storedTags) {
+        tagNames = JSON.parse(storedTags);
+      } else {
+        tagNames = { ...defaultTags };
+        localStorage.setItem('bc_tags', JSON.stringify(tagNames));
+      }
+
+      renderCategoryOptions();
+      renderTagCheckboxes();
+    }
+
+    function renderCategoryOptions() {
+      const select = document.getElementById('actCategory');
+      const val = select.value;
+      select.innerHTML = '';
+      Object.keys(categoryNames).forEach(key => {
+        const opt = document.createElement('option');
+        opt.value = key;
+        opt.textContent = categoryNames[key];
+        select.appendChild(opt);
+      });
+      if (val && categoryNames[val]) {
+        select.value = val;
+      }
+    }
+
+    function renderTagCheckboxes() {
+      const container = document.getElementById('tagCheckboxesContainer');
+      container.innerHTML = '';
+      Object.keys(tagNames).forEach(key => {
+        const label = document.createElement('label');
+        label.className = "flex items-center gap-1.5 text-gray-600 cursor-pointer";
+        label.innerHTML = `
+          <input type="checkbox" value="${key}" class="tag-checkbox rounded border-gray-300 text-primary focus:ring-0">
+          <span>${tagNames[key]}</span>
+        `;
+        container.appendChild(label);
+      });
+    }
+
+    function addNewCategory() {
+      const name = document.getElementById('newCategoryName').value.trim();
+      if (!name) return;
+      
+      const key = 'cat_' + Date.now();
+      categoryNames[key] = name;
+      localStorage.setItem('bc_categories', JSON.stringify(categoryNames));
+      
+      document.getElementById('newCategoryName').value = '';
+      renderCategoryOptions();
+      showToast(`新增遊戲分類成功: ${name}`);
+    }
+
+    function addNewTag() {
+      const name = document.getElementById('newTagName').value.trim();
+      if (!name) return;
+      
+      const key = 'tag_' + Date.now();
+      tagNames[key] = name;
+      localStorage.setItem('bc_tags', JSON.stringify(tagNames));
+      
+      document.getElementById('newTagName').value = '';
+      renderTagCheckboxes();
+      showToast(`新增智慧標籤成功: ${name}`);
+    }
+
+    // Initialize Page
+    function init() {
+      initCategoriesAndTags();
+
+      const stored = localStorage.getItem('bc_events_config');
+      if (stored) {
+        eventsConfig = JSON.parse(stored);
+      } else {
+        eventsConfig = JSON.parse(JSON.stringify(defaultMockEvents));
+        saveConfig();
+      }
+      renderTable();
+    }
+
+    function saveConfig() {
+      // Sort items by weight descending before saving
+      eventsConfig.sort((a, b) => (b.weight || 0) - (a.weight || 0));
+      localStorage.setItem('bc_events_config', JSON.stringify(eventsConfig));
+    }
+
+    function renderTable() {
+      const tbody = document.getElementById('adminTableBody');
+      tbody.innerHTML = '';
+
+      document.getElementById('recordsCount').textContent = `共 ${eventsConfig.length} 個活動`;
+
+      eventsConfig.forEach((e, idx) => {
+        const row = document.createElement('tr');
+        row.className = "hover:bg-gray-50/80 transition";
+
+        // Generate tags badges
+        const tagsBadgeHTML = e.tags.map(t => `
+          <span class="text-[9px] bg-gray-100 border border-gray-200 text-gray-500 px-1.5 py-0.5 rounded">${tagNames[t] || t}</span>
+        `).join(' ');
+
+        // Visibility checkbox status
+        const visibleChecked = e.visible !== false ? 'checked' : '';
+
+        // Direct link URL template
+        const path = window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/'));
+        const directLink = `${window.location.protocol}//${window.location.host}${path}/index.html?id=${e.id}`;
+
+        row.innerHTML = `
+          <!-- ID -->
+          <td class="px-5 py-4 font-mono text-gray-400 font-bold">${e.id}</td>
+          
+          <!-- Basic Info -->
+          <td class="px-5 py-4">
+            <div class="font-bold text-gray-800 text-xs">${e.title}</div>
+            <div class="text-[10px] text-primary font-bold font-mono mt-0.5">${e.reward} · <span class="text-gray-400 font-normal">${e.badge}</span></div>
+          </td>
+          
+          <!-- Category -->
+          <td class="px-5 py-4 font-medium text-gray-700">${categoryNames[e.category] || e.category}</td>
+          
+          <!-- Smart Tags -->
+          <td class="px-5 py-4">${tagsBadgeHTML}</td>
+          
+          <!-- Display Time -->
+          <td class="px-5 py-4 font-mono text-[9px] text-gray-500 leading-normal whitespace-nowrap">
+            <div>起: ${e.startTime ? e.startTime.replace('T', ' ') : '無限制'}</div>
+            <div class="mt-0.5">迄: ${e.endTime ? e.endTime.replace('T', ' ') : '無限制'}</div>
+          </td>
+          
+          <!-- Weight -->
+          <td class="px-5 py-4 text-center">
+            <input type="number" onchange="updateWeight('${e.id}', this.value)" value="${e.weight || 0}" 
+              class="w-12 bg-gray-50 border border-gray-200 rounded p-1 text-center text-gray-800 focus:outline-none focus:border-primary">
+          </td>
+          
+          <!-- Actions -->
+          <td class="px-5 py-4">
+            <div class="flex items-center justify-center gap-1.5">
+              <button onclick="editActivity('${e.id}')" class="px-2.5 py-1 bg-white border border-gray-200 hover:bg-gray-50 hover:text-gray-800 rounded-md text-[10px] font-bold text-gray-500 transition">
+                編輯
+              </button>
+              <button onclick="copyDirectLink('${directLink}')" class="px-2 py-1 bg-white border border-gray-200 hover:bg-gray-50 hover:text-gray-800 rounded-md text-[10px] text-gray-500 transition font-bold" title="複製直連網址">
+                複製
+              </button>
+              <button onclick="deleteActivity('${e.id}')" class="px-2 py-1 bg-red-50 border border-red-200 hover:bg-red-100 text-red-600 rounded-md text-[10px] transition font-bold">
+                刪除
+              </button>
+            </div>
+          </td>
+        `;
+        tbody.appendChild(row);
+      });
+    }
+
+    // Toggle Visible/Hidden
+    function toggleVisibility(id) {
+      const e = eventsConfig.find(x => x.id === id);
+      if (e) {
+        e.visible = (e.visible === false) ? true : false;
+        saveConfig();
+        renderTable();
+        showToast(`✅ 已更新活動 ${id} 的前台顯示狀態`);
+      }
+    }
+
+    // Update Sorting Weight
+    function updateWeight(id, val) {
+      const e = eventsConfig.find(x => x.id === id);
+      if (e) {
+        e.weight = parseInt(val) || 0;
+        saveConfig();
+        renderTable();
+        showToast(`✅ 已更新活動 ${id} 的排序權重為 ${e.weight}`);
+      }
+    }
+
+    // Reset Form fields
+    function resetForm() {
+      document.getElementById('editIndex').value = "-1";
+      document.getElementById('formTitle').textContent = "新增自訂優惠活動";
+      document.getElementById('formTitleIcon').textContent = "➕";
+      
+      document.getElementById('actId').value = "";
+      document.getElementById('actId').disabled = false;
+      document.getElementById('actTitle').value = "";
+      document.getElementById('actReward').value = "";
+      document.getElementById('actCategory').value = "slots";
+      document.getElementById('actSummary').value = "";
+      document.getElementById('actDesc').value = "";
+      document.getElementById('actBadge').value = "";
+      document.getElementById('actBadgeStyle').value = "bg-emerald-500/10 text-emerald-500 border border-emerald-500/20";
+      updateLiveBadgePreview();
+      
+      document.getElementById('actStep1').value = "";
+      document.getElementById('actStep2').value = "";
+      document.getElementById('actStep3').value = "";
+      document.getElementById('actStep4').value = "";
+
+      document.getElementById('actWeight').value = "0";
+      document.getElementById('actActionType').value = "claim_instant";
+      document.getElementById('actVisible').value = "true";
+      document.getElementById('actStartTime').value = "";
+      document.getElementById('actEndTime').value = "";
+
+      // Clear checkboxes
+      const boxes = document.querySelectorAll('.tag-checkbox');
+      boxes.forEach(box => box.checked = false);
+    }
+
+    // Edit existing activity
+    function editActivity(id) {
+      const e = eventsConfig.find(x => x.id === id);
+      if (!e) return;
+
+      document.getElementById('editIndex').value = id;
+      document.getElementById('formTitle').textContent = `編輯活動 (${id})`;
+      document.getElementById('formTitleIcon').textContent = "";
+      
+      document.getElementById('actId').value = e.id;
+      document.getElementById('actId').disabled = true; // Cannot edit ID of existing
+      document.getElementById('actTitle').value = e.title;
+      document.getElementById('actReward').value = e.reward;
+      document.getElementById('actCategory').value = e.category;
+      document.getElementById('actSummary').value = e.summary;
+      document.getElementById('actDesc').value = e.desc;
+      document.getElementById('actBadge').value = e.badge;
+      document.getElementById('actBadgeStyle').value = e.badgeClass || "bg-emerald-500/10 text-emerald-500 border border-emerald-500/20";
+      updateLiveBadgePreview();
+      updateCardPreview();
+      
+      document.getElementById('actStep1').value = e.steps[0] || '';
+      document.getElementById('actStep2').value = e.steps[1] || '';
+      document.getElementById('actStep3').value = e.steps[2] || '';
+      document.getElementById('actStep4').value = e.steps[3] || '';
+
+      document.getElementById('actWeight').value = e.weight || 0;
+      document.getElementById('actActionType').value = e.actionType || "claim_instant";
+      document.getElementById('actVisible').value = e.visible !== false ? "true" : "false";
+      document.getElementById('actStartTime').value = e.startTime || "";
+      document.getElementById('actEndTime').value = e.endTime || "";
+
+      // Fill checkboxes
+      const boxes = document.querySelectorAll('.tag-checkbox');
+      boxes.forEach(box => {
+        box.checked = e.tags.includes(box.value);
+      });
+
+      // Scroll form into view if on mobile
+      document.getElementById('activityForm').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    // Save Form submission (Create or Edit)
+    function saveActivityForm(event) {
+      event.preventDefault();
+      
+      const editId = document.getElementById('editIndex').value;
+      const id = document.getElementById('actId').value.trim();
+      const title = document.getElementById('actTitle').value.trim();
+      const reward = document.getElementById('actReward').value.trim();
+      const category = document.getElementById('actCategory').value;
+      const summary = document.getElementById('actSummary').value.trim();
+      const desc = document.getElementById('actDesc').value.trim();
+      const badge = document.getElementById('actBadge').value.trim();
+      const badgeClass = document.getElementById('actBadgeStyle').value;
+      
+      const step1 = document.getElementById('actStep1').value.trim();
+      const step2 = document.getElementById('actStep2').value.trim();
+      const step3 = document.getElementById('actStep3').value.trim();
+      const step4 = document.getElementById('actStep4').value.trim();
+      const steps = [step1, step2, step3, step4].filter(Boolean);
+
+      const weight = parseInt(document.getElementById('actWeight').value) || 0;
+      const actionType = document.getElementById('actActionType').value;
+      const visible = document.getElementById('actVisible').value === 'true';
+      const startTime = document.getElementById('actStartTime').value;
+      const endTime = document.getElementById('actEndTime').value;
+
+      // Extract checked tags
+      const checkedTags = [];
+      const boxes = document.querySelectorAll('.tag-checkbox');
+      boxes.forEach(box => {
+        if (box.checked) checkedTags.push(box.value);
+      });
+
+      if (editId === "-1") {
+        // Create Mode
+        // Check duplicate ID
+        if (eventsConfig.some(x => x.id === id)) {
+          alert('活動編號 (ID) 重複，請使用不同的 ID');
+          return;
+        }
+
+        const newAct = {
+          id,
+          title,
+          reward,
+          summary,
+          desc,
+          category,
+          tags: checkedTags,
+          badge,
+          badgeClass,
+          steps,
+          weight,
+          actionType,
+          visible,
+          startTime,
+          endTime
+        };
+        
+        eventsConfig.push(newAct);
+        showToast(`成功新增活動 ${id}！`);
+      } else {
+        // Edit Mode
+        const idx = eventsConfig.findIndex(x => x.id === editId);
+        if (idx !== -1) {
+          eventsConfig[idx].title = title;
+          eventsConfig[idx].reward = reward;
+          eventsConfig[idx].category = category;
+          eventsConfig[idx].summary = summary;
+          eventsConfig[idx].desc = desc;
+          eventsConfig[idx].tags = checkedTags;
+          eventsConfig[idx].badge = badge;
+          eventsConfig[idx].badgeClass = badgeClass;
+          eventsConfig[idx].steps = steps;
+          eventsConfig[idx].weight = weight;
+          eventsConfig[idx].actionType = actionType;
+          eventsConfig[idx].visible = visible;
+          eventsConfig[idx].startTime = startTime;
+          eventsConfig[idx].endTime = endTime;
+
+          showToast(`活動 ${editId} 修改成功！`);
+        }
+      }
+
+      saveConfig();
+      renderTable();
+      resetForm();
+      switchSubTab('list');
+    }
+
+    // Delete activity
+    function deleteActivity(id) {
+      if (confirm(`確定要刪除活動 ${id} 嗎？刪除後前台將不再展示。`)) {
+        eventsConfig = eventsConfig.filter(x => x.id !== id);
+        saveConfig();
+        renderTable();
+        showToast(`已刪除活動 ${id}`);
+        // Reset form if currently editing the deleted item
+        if (document.getElementById('editIndex').value === id) {
+          resetForm();
+        }
+      }
+    }
+
+    // Restore to default template
+    function resetToDefault() {
+      if (confirm('確定要將後台配置還原為初始的預設活動嗎？此操作會覆蓋所有手動新增或編輯過的活動！')) {
+        eventsConfig = JSON.parse(JSON.stringify(defaultMockEvents));
+        saveConfig();
+        renderTable();
+        resetForm();
+        showToast('已恢復為系統預設活動配置');
+      }
+    }
+
+    // Copy link helper
+    function copyDirectLink(url) {
+      navigator.clipboard.writeText(url).then(() => {
+        showToast('直連測試連結已複製到剪貼簿！');
+      }).catch(err => {
+        alert('複製失敗，請手動複製: ' + url);
+      });
+    }
+
+    // Show top notification toast
+    function showToast(msg) {
+      const el = document.getElementById('toast');
+      const text = document.getElementById('toastText');
+      text.textContent = msg;
+      
+      el.classList.remove('opacity-0', 'translate-y-2');
+      el.classList.add('opacity-100', 'translate-y-0');
+
+      setTimeout(() => {
+        el.classList.remove('opacity-100', 'translate-y-0');
+        el.classList.add('opacity-0', 'translate-y-2');
+      }, 2500);
+    }
+
+    // Tab/SubTab switching logic
+    function switchSubTab(tabId) {
+      const btnList = document.getElementById('tab-list');
+      const btnForm = document.getElementById('tab-form');
+      const viewList = document.getElementById('view-list-container');
+      const viewForm = document.getElementById('view-form-container');
+
+      if (tabId === 'list') {
+        btnList.className = "menu-active w-full flex items-center gap-2.5 px-4 py-3 rounded-lg text-white font-medium";
+        btnForm.className = "w-full flex items-center gap-2.5 px-4 py-3 rounded-lg text-gray-400 hover:bg-sidebar-hover hover:text-white transition font-medium";
+        viewList.classList.remove('hidden');
+        viewForm.classList.add('hidden');
+        document.getElementById('topBarTitle').textContent = '活動配置列表';
+      } else {
+        btnForm.className = "menu-active w-full flex items-center gap-2.5 px-4 py-3 rounded-lg text-white font-medium";
+        btnList.className = "w-full flex items-center gap-2.5 px-4 py-3 rounded-lg text-gray-400 hover:bg-sidebar-hover hover:text-white transition font-medium";
+        viewForm.classList.remove('hidden');
+        viewList.classList.add('hidden');
+        if (document.getElementById('editIndex').value === "-1") {
+          document.getElementById('topBarTitle').textContent = '新增自訂活動';
+        } else {
+          const editId = document.getElementById('editIndex').value;
+          document.getElementById('topBarTitle').textContent = `編輯活動 (${editId})`;
+        }
+      }
+    }
+    // Apply select color styling dynamically
+    function updateLiveBadgePreview() {
+      const styleSelect = document.getElementById('actBadgeStyle');
+      // Apply class to the select element itself to colorize its text and bg
+      styleSelect.className = "w-full border rounded-lg p-2.5 text-xs focus:outline-none transition " + styleSelect.value;
+      
+      // Keep card preview up to date
+      updateCardPreview();
+    }
+
+    // Dynamic Live Card Preview Renderer
+    function updateCardPreview() {
+      // 1. Title
+      const title = document.getElementById('actTitle').value.trim() || '活動名稱預覽';
+      document.getElementById('previewTitle').textContent = title;
+
+      // 2. Reward
+      const reward = document.getElementById('actReward').value.trim() || '獎勵字樣';
+      document.getElementById('previewReward').textContent = reward;
+
+      // 3. Summary
+      const summary = document.getElementById('actSummary').value.trim() || '這裡會顯示卡片前台摘要說明...';
+      document.getElementById('previewSummary').textContent = summary;
+
+      // 4. Badge Text & Class
+      const badge = document.getElementById('actBadge').value.trim() || '標籤';
+      const badgeStyleSelect = document.getElementById('actBadgeStyle');
+      const previewBadge = document.getElementById('previewBadge');
+      previewBadge.textContent = badge;
+      
+      // Map light text colors to 400-level for better dark mode compatibility in preview
+      let badgeClass = badgeStyleSelect.value;
+      if (badgeClass.includes('text-emerald-500')) badgeClass = badgeClass.replace('text-emerald-500', 'text-emerald-400');
+      if (badgeClass.includes('text-red-500')) badgeClass = badgeClass.replace('text-red-500', 'text-red-400');
+      if (badgeClass.includes('text-amber-500')) badgeClass = badgeClass.replace('text-amber-500', 'text-amber-400');
+      if (badgeClass.includes('text-blue-500')) badgeClass = badgeClass.replace('text-blue-500', 'text-blue-400');
+      if (badgeClass.includes('text-purple-500')) badgeClass = badgeClass.replace('text-purple-500', 'text-purple-400');
+      if (badgeClass.includes('text-pink-500')) badgeClass = badgeClass.replace('text-pink-500', 'text-pink-400');
+      if (badgeClass.includes('text-cyan-500')) badgeClass = badgeClass.replace('text-cyan-500', 'text-cyan-400');
+      if (badgeClass.includes('text-teal-500')) badgeClass = badgeClass.replace('text-teal-500', 'text-teal-400');
+      if (badgeClass.includes('text-yellow-500')) badgeClass = badgeClass.replace('text-yellow-500', 'text-amber-400');
+      if (badgeClass.includes('text-indigo-500')) badgeClass = badgeClass.replace('text-indigo-500', 'text-indigo-400');
+
+      previewBadge.className = "text-[9px] font-bold px-2 py-0.5 rounded transition " + badgeClass;
+
+      // 5. Steps
+      const steps = [
+        document.getElementById('actStep1').value.trim(),
+        document.getElementById('actStep2').value.trim(),
+        document.getElementById('actStep3').value.trim(),
+        document.getElementById('actStep4').value.trim()
+      ].filter(Boolean);
+
+      const stepsContainer = document.getElementById('previewStepsContainer');
+      if (steps.length === 0) {
+        stepsContainer.classList.add('hidden');
+      } else {
+        stepsContainer.classList.remove('hidden');
+        const stepHTML = steps.map((step, idx) => `
+          <div class="flex items-center gap-0.5">
+            <span class="w-3 h-3 rounded-full bg-gray-800 flex items-center justify-center text-[7px] text-gold font-mono font-bold">${idx + 1}</span>
+            <span class="text-[8px] text-gray-400 font-medium">${step}</span>
+          </div>
+        `).join('<span class="text-[7px] text-gray-600">→</span>');
+        
+        stepsContainer.innerHTML = `
+          <div class="flex items-center justify-between flex-wrap gap-1">
+            ${stepHTML}
+          </div>
+        `;
+      }
+
+      // 6. Action Button behavior mapping
+      const actionType = document.getElementById('actActionType').value;
+      const previewBtn = document.getElementById('previewBtn');
+      
+      if (actionType === 'claim_instant') {
+        previewBtn.textContent = '⚡ 一鍵領取';
+        previewBtn.className = "bg-gradient-to-r from-gold via-gold to-gold-dark text-black hover:brightness-110 text-xs py-1.5 px-3 rounded-lg font-bold transition neon-glow-gold";
+      } else if (actionType === 'go_deposit') {
+        previewBtn.textContent = '一鍵參賽';
+        previewBtn.className = "bg-surface-raised border border-surface-border text-gray-300 hover:border-gold hover:text-gold text-xs py-1.5 px-3 rounded-lg font-bold transition";
+      } else if (actionType === 'register') {
+        previewBtn.textContent = '一鍵報名';
+        previewBtn.className = "bg-surface-raised border border-surface-border text-gray-300 hover:border-gold hover:text-gold text-xs py-1.5 px-3 rounded-lg font-bold transition";
+      } else if (actionType === 'claimed_auto') {
+        previewBtn.textContent = '🟢 自動返水中';
+        previewBtn.className = "bg-[#10b981]/15 text-[#10b981] border border-[#10b981]/30 cursor-default pointer-events-none text-xs py-1.5 px-3 rounded-lg font-bold";
+      } else if (actionType === 'go_deposit_active') {
+        previewBtn.textContent = '💰 去充值達標';
+        previewBtn.className = "bg-gradient-to-r from-amber-500 to-gold text-black hover:brightness-110 text-xs py-1.5 px-3 rounded-lg font-bold transition";
+      } else if (actionType === 'register_active') {
+        previewBtn.textContent = '🎮 去投注流水';
+        previewBtn.className = "bg-[#3b82f6]/20 text-[#3b82f6] border border-[#3b82f6]/40 hover:bg-[#3b82f6]/30 text-xs py-1.5 px-3 rounded-lg font-bold transition";
+      } else if (actionType === 'claimed') {
+        previewBtn.textContent = '✓ 已領取彩金';
+        previewBtn.className = "bg-surface-raised text-gray-600 border border-surface-border cursor-default pointer-events-none text-xs py-1.5 px-3 rounded-lg font-bold";
+      }
+    }
+    // Boot initialize
+    init();
+  </script>
+</body>
+</html>
